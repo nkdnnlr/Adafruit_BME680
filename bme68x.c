@@ -572,13 +572,15 @@ int8_t bme68x_get_data(uint8_t op_mode, struct bme68x_data *data, uint8_t *n_dat
         {
             /* Read the 3 fields and count the number of new data fields */
             rslt = read_all_field_data(field_ptr, dev);
-
+            // return(rslt);
             new_fields = 0;
             for (i = 0; (i < 3) && (rslt == BME68X_OK); i++)
             {
                 if (field_ptr[i]->status & BME68X_NEW_DATA_MSK)
                 {
                     new_fields++;
+                    // return(9);
+
                 }
             }
 

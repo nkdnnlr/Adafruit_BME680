@@ -64,6 +64,7 @@
 #define BME680_FILTER_SIZE_0                                                   \
   BME68X_FILTER_OFF ///< Alias for BME680 existing examples
 
+// #define BME688_DEFAULT_OP_MODE BME68X_FORCED_MODE   // ATTENTION: CHANGED THIS  BME68X_FORCED_MODE
 #define BME688_DEFAULT_OP_MODE BME68X_PARALLEL_MODE   // ATTENTION: CHANGED THIS  BME68X_FORCED_MODE
 
 /*! Adafruit_BME688 Class for both I2C and SPI usage.
@@ -88,7 +89,8 @@ public:
   float readHumidity();
   uint32_t readGas();
   float readAltitude(float seaLevel);
-
+  int8_t get_conf();
+  
   bool setTemperatureOversampling(uint8_t os);
   bool setPressureOversampling(uint8_t os);
   bool setHumidityOversampling(uint8_t os);

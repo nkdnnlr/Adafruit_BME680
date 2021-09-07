@@ -35,6 +35,7 @@
 #include "Adafruit_BME688.h"
 #include "Arduino.h"
 
+#define BIT(n,i) (n>>i&1)
 #define BME680_DEBUG
 /*
  * Macro definition for valid new data (0x80) AND
@@ -333,7 +334,7 @@ uint32_t Adafruit_BME688::beginReading(void) {
                             ((uint32_t)gas_heatr_conf.heatr_dur * 1000);
   }
   else {
-    delayus_period = bme68x_get_meas_dur(BME68X_PARALLEL_MODE, &gas_conf, &gas_sensor) + (gas_heatr_conf.shared_heatr_dur * 1000);
+    delayus_period = (uint32_t)bme68x_get_meas_dur(BME68X_PARALLEL_MODE, &gas_conf, &gas_sensor) + ((uint32_t)gas_heatr_conf.shared_heatr_dur * 1000);
   }
 #ifdef BME680_DEBUG
   Serial.print("meas_dur: ");
@@ -398,12 +399,42 @@ bool Adafruit_BME688::endReading(void) {
 
   // struct bme68x_data data;
   // struct bme68x_data data;
+  struct bme68x_data data_single;
   struct bme68x_data data[3];
   int8_t rslt;
   if (BME688_DEFAULT_OP_MODE==BME68X_FORCED_MODE){
     Serial.println("FORCED MODE");
-    // rslt = bme68x_get_data(BME688_DEFAULT_OP_MODE, &data, &n_fields, &gas_sensor);
-  }
+    rslt = bme68x_get_data(BME688_DEFAULT_OP_MODE, &data_single, &n_fields, &gas_sensor);
+    Serial.print("Temperature: ");
+    Serial.println(data_single.temperature);
+
+    Serial.print("humidity: ");
+    Serial.println(data_single.humidity);
+
+    Serial.print("pressure: ");
+    Serial.println(data_single.pressure);
+
+    Serial.print("gas_resistance: ");
+    Serial.println(data_single.gas_resistance);
+
+    Serial.print("status: ");
+    Serial.println(data_single.status);
+    Serial.print("->");
+    Serial.print(BIT(data_single.status,7));
+    Serial.print(BIT(data_single.status,6));
+    Serial.print(BIT(data_single.status,5));
+    Serial.print(BIT(data_single.status,4));
+    Serial.print(BIT(data_single.status,3));
+    Serial.print(BIT(data_single.status,2));
+    Serial.print(BIT(data_single.status,1));
+    Serial.println(BIT(data_single.status,0));
+
+    Serial.print("gas_index: ");
+    Serial.println(data_single.gas_index);    
+
+    Serial.print("meas_index: ");
+    Serial.println(data_single.meas_index);
+    }
   else {
     Serial.println("PARALLEL MODE");
     // gas_sensor.delay_us(remaining_millis, gas_sensor.intf_ptr);
@@ -438,10 +469,37 @@ bool Adafruit_BME688::endReading(void) {
 
     Serial.print("status: ");
     Serial.print(data[0].status);
+    Serial.print("->");
+    Serial.print(BIT(data[0].status,7));
+    Serial.print(BIT(data[0].status,6));
+    Serial.print(BIT(data[0].status,5));
+    Serial.print(BIT(data[0].status,4));
+    Serial.print(BIT(data[0].status,3));
+    Serial.print(BIT(data[0].status,2));
+    Serial.print(BIT(data[0].status,1));
+    Serial.print(BIT(data[0].status,0));
     Serial.print(", ");
     Serial.print(data[1].status);
+    Serial.print("->");
+    Serial.print(BIT(data[1].status,7));
+    Serial.print(BIT(data[1].status,6));
+    Serial.print(BIT(data[1].status,5));
+    Serial.print(BIT(data[1].status,4));
+    Serial.print(BIT(data[1].status,3));
+    Serial.print(BIT(data[1].status,2));
+    Serial.print(BIT(data[1].status,1));
+    Serial.print(BIT(data[1].status,0));    
     Serial.print(", ");
     Serial.println(data[2].status);
+    Serial.print("->");
+    Serial.print(BIT(data[2].status,7));
+    Serial.print(BIT(data[2].status,6));
+    Serial.print(BIT(data[2].status,5));
+    Serial.print(BIT(data[2].status,4));
+    Serial.print(BIT(data[2].status,3));
+    Serial.print(BIT(data[2].status,2));
+    Serial.print(BIT(data[2].status,1));
+    Serial.print(BIT(data[2].status,0));
 
     Serial.print("gas_index: ");
     Serial.print(data[0].gas_index);
@@ -579,8 +637,10 @@ bool Adafruit_BME688::setGasHeaterProfile(uint16_t temp_prof[10], uint16_t mul_p
 
       /* Shared heating duration in milliseconds */
     gas_heatr_conf.shared_heatr_dur = 140 - (bme68x_get_meas_dur(op_mode, &gas_conf, &gas_sensor) / 1000);
-
-    gas_heatr_conf.profile_len = 10;
+    // gas_heatr_conf.shared_heatr_dur = 150;
+    Serial.print("Shared heater dur: ");
+    Serial.println(gas_heatr_conf.shared_heatr_dur);
+    gas_heatr_conf.profile_len = 1;
 
     int8_t rslt =
         bme68x_set_heatr_conf(op_mode, &gas_heatr_conf, &gas_sensor);  
@@ -768,4 +828,19 @@ static int8_t spi_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
 static void delay_usec(uint32_t us, void *intf_ptr) {
   delayMicroseconds(us);
   yield();
+}
+
+
+/*!
+ *  @brief  Setter for Temperature oversampling
+ *  @param  oversample
+ *          Oversampling setting, can be BME68X_OS_NONE (turn off Temperature
+ * reading), BME68X_OS_1X, BME68X_OS_2X, BME68X_OS_4X, BME68X_OS_8X or
+ * BME68X_OS_16X
+ *  @return True on success, False on failure
+ */
+
+int8_t Adafruit_BME688::get_conf() {
+  int8_t rslt = bme68x_get_conf(&gas_conf, &gas_sensor);
+  return rslt;
 }
