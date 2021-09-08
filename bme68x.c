@@ -579,8 +579,6 @@ int8_t bme68x_get_data(uint8_t op_mode, struct bme68x_data *data, uint8_t *n_dat
                 if (field_ptr[i]->status & BME68X_NEW_DATA_MSK)
                 {
                     new_fields++;
-                    // return(9);
-
                 }
             }
 

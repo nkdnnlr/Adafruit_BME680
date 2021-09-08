@@ -30,6 +30,7 @@
 #define __BME680_H__
 
 #include "Arduino.h"
+#include <map>
 
 #include "bme68x.h"
 #include <Adafruit_I2CDevice.h>
@@ -65,7 +66,8 @@
   BME68X_FILTER_OFF ///< Alias for BME680 existing examples
 
 // #define BME688_DEFAULT_OP_MODE BME68X_FORCED_MODE   // ATTENTION: CHANGED THIS  BME68X_FORCED_MODE
-#define BME688_DEFAULT_OP_MODE BME68X_PARALLEL_MODE   // ATTENTION: CHANGED THIS  BME68X_FORCED_MODE
+// #define BME688_DEFAULT_OP_MODE BME68X_PARALLEL_MODE   // ATTENTION: CHANGED THIS  BME68X_FORCED_MODE
+#define BME688_DEFAULT_OP_MODE BME68X_SEQUENTIAL_MODE   // ATTENTION: CHANGED THIS  BME68X_FORCED_MODE
 
 /*! Adafruit_BME688 Class for both I2C and SPI usage.
  *  Wraps the Bosch library for Arduino usage
@@ -134,5 +136,11 @@ private:
   struct bme68x_conf gas_conf;
   struct bme68x_heatr_conf gas_heatr_conf;
 };
+
+// std::map<char, char> default_op_mode = {
+//     { 'forced', 1 },
+//     { 'parallel', 2 },
+//     { 'sequence', 3 }
+// };
 
 #endif
