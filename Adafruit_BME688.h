@@ -85,7 +85,7 @@ public:
   Adafruit_BME688(int8_t cspin, SPIClass *theSPI = &SPI);
   Adafruit_BME688(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin);
 
-  bool begin(uint8_t addr = BME68X_DEFAULT_ADDRESS, bool initSettings = true);
+  bool begin(uint8_t addr = BME68X_DEFAULT_ADDRESS, bool initSettings = false);
   float readTemperature();
   float readPressure();
   float readHumidity();
@@ -97,6 +97,7 @@ public:
   bool setPressureOversampling(uint8_t os);
   bool setHumidityOversampling(uint8_t os);
   bool setIIRFilterSize(uint8_t fs);
+  bool setOnlyTPH();
   bool setGasHeater(uint16_t heaterTemp, uint16_t heaterTime);
   bool setGasHeaterProfile(uint16_t temp_prof[10], uint16_t mul_prof[10]);
   bool setODR(uint8_t odr);

@@ -520,11 +520,11 @@ uint32_t bme68x_get_meas_dur(const uint8_t op_mode, struct bme68x_conf *conf, st
             /* TPH measurement duration */
             meas_dur = meas_cycles * UINT32_C(1963);
             meas_dur += UINT32_C(477 * 4); /* TPH switching duration */
-            meas_dur += UINT32_C(477 * 5); /* Gas measurement duration */
+            meas_dur += 0;//UINT32_C(477 * 5); /* Gas measurement duration */
 
             if (op_mode != BME68X_PARALLEL_MODE)
             {
-                meas_dur += UINT32_C(1000); /* Wake up duration of 1ms */
+                meas_dur += 0;//UINT32_C(1000); /* Wake up duration of 1ms */
             }
         }
     }
@@ -537,6 +537,7 @@ uint32_t bme68x_get_meas_dur(const uint8_t op_mode, struct bme68x_conf *conf, st
  * from the sensor, compensates the data and store it in the bme68x_data
  * structure instance passed by the user.
  */
+
 int8_t bme68x_get_data(uint8_t op_mode, struct bme68x_data *data, uint8_t *n_data, struct bme68x_dev *dev)
 {
     int8_t rslt;
