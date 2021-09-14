@@ -67,7 +67,7 @@
 
 // #define BME688_DEFAULT_OP_MODE BME68X_FORCED_MODE   // ATTENTION: CHANGED THIS  BME68X_FORCED_MODE
 // #define BME688_DEFAULT_OP_MODE BME68X_PARALLEL_MODE   // ATTENTION: CHANGED THIS  BME68X_FORCED_MODE
-#define BME688_DEFAULT_OP_MODE BME68X_SEQUENTIAL_MODE   // ATTENTION: CHANGED THIS  BME68X_FORCED_MODE
+// #define BME688_DEFAULT_OP_MODE BME68X_SEQUENTIAL_MODE   // ATTENTION: CHANGED THIS  BME68X_FORCED_MODE
 
 /*! Adafruit_BME688 Class for both I2C and SPI usage.
  *  Wraps the Bosch library for Arduino usage
@@ -85,7 +85,7 @@ public:
   Adafruit_BME688(int8_t cspin, SPIClass *theSPI = &SPI);
   Adafruit_BME688(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin);
 
-  bool begin(uint8_t addr = BME68X_DEFAULT_ADDRESS, bool initSettings = false);
+  bool begin(uint8_t mode=BME68X_FORCED_MODE, uint8_t addr = BME68X_DEFAULT_ADDRESS, bool initSettings = false);
   float readTemperature();
   float readPressure();
   float readHumidity();
@@ -101,6 +101,7 @@ public:
   bool setGasHeater(uint16_t heaterTemp, uint16_t heaterTime);
   bool setGasHeaterProfile(uint16_t temp_prof[10], uint16_t mul_prof[10]);
   bool setODR(uint8_t odr);
+  bool setMode(uint8_t mode);
 
   // Perform a reading in blocking mode.
   bool performReading();
@@ -110,6 +111,14 @@ public:
   bool endReading();
 
   int remainingReadingMillis();
+
+  /** Time since first measurement after calling performReading() or
+   * endReading() **/
+  uint8_t meas_mode;
+  
+  /** Time since first measurement after calling performReading() or
+   * endReading() **/
+  uint32_t now_time = 0;
 
   /** Temperature (Celsius) assigned after calling performReading() or
    * endReading() **/

@@ -61,7 +61,6 @@ static int8_t spi_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
 static void delay_usec(uint32_t us, void *intf_ptr);
 
 static long start_time = millis();
-long now_time = millis();
 
 // PUBLIC FUNCTIONS
 
@@ -117,7 +116,7 @@ Adafruit_BME688::Adafruit_BME688(int8_t cspin, int8_t mosipin, int8_t misopin,
  *          Default is true.
  *  @return True on sensor initialization success. False on failure.
  */
-bool Adafruit_BME688::begin(uint8_t addr, bool initSettings) {
+bool Adafruit_BME688::begin( uint8_t mode, uint8_t addr, bool initSettings) {
   int8_t rslt;
 
   if (!_spidev) { // i2c
@@ -128,6 +127,8 @@ bool Adafruit_BME688::begin(uint8_t addr, bool initSettings) {
     if (!_i2cdev->begin()) {
       return false;
     }
+
+    // meas_mode = mode;
 
     gas_sensor.chip_id = addr;
     gas_sensor.intf = BME68X_I2C_INTF;
@@ -233,7 +234,7 @@ bool Adafruit_BME688::begin(uint8_t addr, bool initSettings) {
     setGasHeater(0, 0);
   }
   // don't do anything till we request a reading
-  rslt = bme68x_set_op_mode(BME688_DEFAULT_OP_MODE, &gas_sensor);
+  rslt = bme68x_set_op_mode(mode, &gas_sensor);
   // rslt = bme68x_set_op_mode(BME68X_SEQUENTIAL_MODE, &gas_sensor);
 
 
@@ -322,7 +323,7 @@ uint32_t Adafruit_BME688::beginReading(void) {
     return _meas_start + _meas_period;
   }
 
-  int8_t rslt = bme68x_set_op_mode(BME688_DEFAULT_OP_MODE, &gas_sensor);
+  int8_t rslt = bme68x_set_op_mode(meas_mode, &gas_sensor);
   // int8_t rslt = bme68x_set_op_mode(BME68X_SEQUENTIAL_MODE, &gas_sensor);
 
 #ifdef BME680_DEBUG
@@ -334,13 +335,13 @@ uint32_t Adafruit_BME688::beginReading(void) {
 
   /* Calculate delay period in microseconds */
   uint32_t delayus_period = 0;
-  if (BME688_DEFAULT_OP_MODE==BME68X_FORCED_MODE){
+  if (meas_mode==BME68X_FORCED_MODE){
       delayus_period = (uint32_t)bme68x_get_meas_dur(
-                                BME688_DEFAULT_OP_MODE, &gas_conf, &gas_sensor) +
+                                meas_mode, &gas_conf, &gas_sensor) +
                             ((uint32_t)gas_heatr_conf.heatr_dur * 1000);
   }
   else {
-    delayus_period = (uint32_t)bme68x_get_meas_dur(BME688_DEFAULT_OP_MODE, &gas_conf, &gas_sensor) + ((uint32_t)gas_heatr_conf.shared_heatr_dur * 1000);
+    delayus_period = (uint32_t)bme68x_get_meas_dur(meas_mode, &gas_conf, &gas_sensor) + ((uint32_t)gas_heatr_conf.shared_heatr_dur * 1000);
   }
 #ifdef BME680_DEBUG
   Serial.print("meas_dur: ");
@@ -350,8 +351,8 @@ uint32_t Adafruit_BME688::beginReading(void) {
   Serial.print(F("delayus_period: "));
   Serial.println(delayus_period);
 #endif
-  Serial.print(F("delayus_period: "));
-  Serial.println(delayus_period);
+  // Serial.print(F("delayus_period: "));
+  // Serial.println(delayus_period);
   // Serial.print("measure: ");
   // Serial.println(bme68x_get_meas_dur(BME68X_FORCED_MODE, &gas_conf,
   // &gas_sensor)); Serial.print("heater: ");
@@ -412,157 +413,157 @@ bool Adafruit_BME688::endReading(void) {
   int8_t rslt;
   unsigned long elapes_time = millis() - start_time - now_time;
   now_time += elapes_time;
-  if (BME688_DEFAULT_OP_MODE==BME68X_FORCED_MODE){
-    Serial.println("FORCED MODE");
-    rslt = bme68x_get_data(BME688_DEFAULT_OP_MODE, &data_single, &n_fields, &gas_sensor);
-    // Serial.print("Temperature: ");
-    // Serial.println(data_single.temperature);
+  if (meas_mode==BME68X_FORCED_MODE){
+    // Serial.println("FORCED MODE");
+    rslt = bme68x_get_data(meas_mode, &data_single, &n_fields, &gas_sensor);
+                      // Serial.print("Temperature: ");
+                      // Serial.println(data_single.temperature);
 
-    // Serial.print("humidity: ");
-    // Serial.println(data_single.humidity);
+                      // Serial.print("humidity: ");
+                      // Serial.println(data_single.humidity);
 
-    // Serial.print("pressure: ");
-    // Serial.println(data_single.pressure);
+                      // Serial.print("pressure: ");
+                      // Serial.println(data_single.pressure);
 
-    // Serial.print("gas_resistance: ");
-    // Serial.println(data_single.gas_resistance);
+                      // Serial.print("gas_resistance: ");
+                      // Serial.println(data_single.gas_resistance);
 
-    // Serial.println("status: ");
-    // Serial.print(data_single.status);
-    // Serial.print("->");
-    // Serial.print(BIT(data_single.status,7));
-    // Serial.print(BIT(data_single.status,6));
-    // Serial.print(BIT(data_single.status,5));
-    // Serial.print(BIT(data_single.status,4));
-    // Serial.print(BIT(data_single.status,3));
-    // Serial.print(BIT(data_single.status,2));
-    // Serial.print(BIT(data_single.status,1));
-    // Serial.print(BIT(data_single.status,0));
-    // Serial.println("");
+                      // Serial.println("status: ");
+                      // Serial.print(data_single.status);
+                      // Serial.print("->");
+                      // Serial.print(BIT(data_single.status,7));
+                      // Serial.print(BIT(data_single.status,6));
+                      // Serial.print(BIT(data_single.status,5));
+                      // Serial.print(BIT(data_single.status,4));
+                      // Serial.print(BIT(data_single.status,3));
+                      // Serial.print(BIT(data_single.status,2));
+                      // Serial.print(BIT(data_single.status,1));
+                      // Serial.print(BIT(data_single.status,0));
+                      // Serial.println("");
 
-    // Serial.print("gas_index: ");
-    // Serial.println(data_single.gas_index);    
+                      // Serial.print("gas_index: ");
+                      // Serial.println(data_single.gas_index);    
 
-    // Serial.print("meas_index: ");
-    // Serial.println(data_single.meas_index);
-    printf("%lu, %lu, %.2f, %.2f, %.2f, %.2f, 0x%x, %d, %d\n",
-            // sample_count,
-            // (long unsigned int)time_ms,
-            now_time,
-            elapes_time,
-            data_single.temperature,
-            data_single.pressure,
-            data_single.humidity,
-            data_single.gas_resistance,
-            data_single.status,
-            data_single.gas_index,
-            data_single.meas_index);
+                      // Serial.print("meas_index: ");
+                      // Serial.println(data_single.meas_index);
+    // printf("%lu, %lu, %.2f, %.2f, %.2f, %.2f, 0x%x, %d, %d\n",
+    //         // sample_count,
+    //         // (long unsigned int)time_ms,
+    //         now_time,
+    //         elapes_time,
+    //         data_single.temperature,
+    //         data_single.pressure,
+    //         data_single.humidity,
+    //         data_single.gas_resistance,
+    //         data_single.status,
+    //         data_single.gas_index,
+    //         data_single.meas_index);
   }
   else {
-    Serial.println("PARALLEL MODE");
+    // Serial.println("PARALLEL MODE");
     // gas_sensor.delay_us(remaining_millis, gas_sensor.intf_ptr);
-    rslt = bme68x_get_data(BME688_DEFAULT_OP_MODE, data, &n_fields, &gas_sensor);
-    // Serial.print("Temperature: ");
-    // Serial.print(data[0].temperature);
-    // Serial.print(", ");
-    // Serial.print(data[1].temperature);
-    // Serial.print(", ");
-    // Serial.println(data[2].temperature);
+    rslt = bme68x_get_data(meas_mode, data, &n_fields, &gas_sensor);
+                      // Serial.print("Temperature: ");
+                      // Serial.print(data[0].temperature);
+                      // Serial.print(", ");
+                      // Serial.print(data[1].temperature);
+                      // Serial.print(", ");
+                      // Serial.println(data[2].temperature);
 
-    // Serial.print("humidity: ");
-    // Serial.print(data[0].humidity);
-    // Serial.print(", ");
-    // Serial.print(data[1].humidity);
-    // Serial.print(", ");
-    // Serial.println(data[2].humidity);
+                      // Serial.print("humidity: ");
+                      // Serial.print(data[0].humidity);
+                      // Serial.print(", ");
+                      // Serial.print(data[1].humidity);
+                      // Serial.print(", ");
+                      // Serial.println(data[2].humidity);
 
-    // Serial.print("pressure: ");
-    // Serial.print(data[0].pressure);
-    // Serial.print(", ");
-    // Serial.print(data[1].pressure);
-    // Serial.print(", ");
-    // Serial.println(data[2].pressure);
+                      // Serial.print("pressure: ");
+                      // Serial.print(data[0].pressure);
+                      // Serial.print(", ");
+                      // Serial.print(data[1].pressure);
+                      // Serial.print(", ");
+                      // Serial.println(data[2].pressure);
 
-    // Serial.print("gas_resistance: ");
-    // Serial.print(data[0].gas_resistance);
-    // Serial.print(", ");
-    // Serial.print(data[1].gas_resistance);
-    // Serial.print(", ");
-    // Serial.println(data[2].gas_resistance);
+                      // Serial.print("gas_resistance: ");
+                      // Serial.print(data[0].gas_resistance);
+                      // Serial.print(", ");
+                      // Serial.print(data[1].gas_resistance);
+                      // Serial.print(", ");
+                      // Serial.println(data[2].gas_resistance);
 
-    // Serial.println("status: ");
-    // Serial.print(data[0].status);
-    // Serial.print("->");
-    // Serial.print(BIT(data[0].status,7));
-    // Serial.print(BIT(data[0].status,6));
-    // Serial.print(BIT(data[0].status,5));
-    // Serial.print(BIT(data[0].status,4));
-    // Serial.print(BIT(data[0].status,3));
-    // Serial.print(BIT(data[0].status,2));
-    // Serial.print(BIT(data[0].status,1));
-    // Serial.print(BIT(data[0].status,0));
-    // Serial.println("");
-    // Serial.print(data[1].status);
-    // Serial.print("->");
-    // Serial.print(BIT(data[1].status,7));
-    // Serial.print(BIT(data[1].status,6));
-    // Serial.print(BIT(data[1].status,5));
-    // Serial.print(BIT(data[1].status,4));
-    // Serial.print(BIT(data[1].status,3));
-    // Serial.print(BIT(data[1].status,2));
-    // Serial.print(BIT(data[1].status,1));
-    // Serial.print(BIT(data[1].status,0));    
-    // Serial.println("");
-    // Serial.print(data[2].status);
-    // Serial.print("->");
-    // Serial.print(BIT(data[2].status,7));
-    // Serial.print(BIT(data[2].status,6));
-    // Serial.print(BIT(data[2].status,5));
-    // Serial.print(BIT(data[2].status,4));
-    // Serial.print(BIT(data[2].status,3));
-    // Serial.print(BIT(data[2].status,2));
-    // Serial.print(BIT(data[2].status,1));
-    // Serial.print(BIT(data[2].status,0));
-    // Serial.println("");
-    // Serial.print(data[3].status);
-    // Serial.print("->");
-    // Serial.print(BIT(data[3].status,7));
-    // Serial.print(BIT(data[3].status,6));
-    // Serial.print(BIT(data[3].status,5));
-    // Serial.print(BIT(data[3].status,4));
-    // Serial.print(BIT(data[3].status,3));
-    // Serial.print(BIT(data[3].status,2));
-    // Serial.print(BIT(data[3].status,1));
-    // Serial.print(BIT(data[3].status,0));
-    // Serial.println("");
-    // Serial.print(data[4].status);
-    // Serial.print("->");
-    // Serial.print(BIT(data[4].status,7));
-    // Serial.print(BIT(data[4].status,6));
-    // Serial.print(BIT(data[4].status,5));
-    // Serial.print(BIT(data[4].status,4));
-    // Serial.print(BIT(data[4].status,3));
-    // Serial.print(BIT(data[4].status,2));
-    // Serial.print(BIT(data[4].status,1));
-    // Serial.print(BIT(data[4].status,0));
-    // Serial.println("");
+                      // Serial.println("status: ");
+                      // Serial.print(data[0].status);
+                      // Serial.print("->");
+                      // Serial.print(BIT(data[0].status,7));
+                      // Serial.print(BIT(data[0].status,6));
+                      // Serial.print(BIT(data[0].status,5));
+                      // Serial.print(BIT(data[0].status,4));
+                      // Serial.print(BIT(data[0].status,3));
+                      // Serial.print(BIT(data[0].status,2));
+                      // Serial.print(BIT(data[0].status,1));
+                      // Serial.print(BIT(data[0].status,0));
+                      // Serial.println("");
+                      // Serial.print(data[1].status);
+                      // Serial.print("->");
+                      // Serial.print(BIT(data[1].status,7));
+                      // Serial.print(BIT(data[1].status,6));
+                      // Serial.print(BIT(data[1].status,5));
+                      // Serial.print(BIT(data[1].status,4));
+                      // Serial.print(BIT(data[1].status,3));
+                      // Serial.print(BIT(data[1].status,2));
+                      // Serial.print(BIT(data[1].status,1));
+                      // Serial.print(BIT(data[1].status,0));    
+                      // Serial.println("");
+                      // Serial.print(data[2].status);
+                      // Serial.print("->");
+                      // Serial.print(BIT(data[2].status,7));
+                      // Serial.print(BIT(data[2].status,6));
+                      // Serial.print(BIT(data[2].status,5));
+                      // Serial.print(BIT(data[2].status,4));
+                      // Serial.print(BIT(data[2].status,3));
+                      // Serial.print(BIT(data[2].status,2));
+                      // Serial.print(BIT(data[2].status,1));
+                      // Serial.print(BIT(data[2].status,0));
+                      // Serial.println("");
+                      // Serial.print(data[3].status);
+                      // Serial.print("->");
+                      // Serial.print(BIT(data[3].status,7));
+                      // Serial.print(BIT(data[3].status,6));
+                      // Serial.print(BIT(data[3].status,5));
+                      // Serial.print(BIT(data[3].status,4));
+                      // Serial.print(BIT(data[3].status,3));
+                      // Serial.print(BIT(data[3].status,2));
+                      // Serial.print(BIT(data[3].status,1));
+                      // Serial.print(BIT(data[3].status,0));
+                      // Serial.println("");
+                      // Serial.print(data[4].status);
+                      // Serial.print("->");
+                      // Serial.print(BIT(data[4].status,7));
+                      // Serial.print(BIT(data[4].status,6));
+                      // Serial.print(BIT(data[4].status,5));
+                      // Serial.print(BIT(data[4].status,4));
+                      // Serial.print(BIT(data[4].status,3));
+                      // Serial.print(BIT(data[4].status,2));
+                      // Serial.print(BIT(data[4].status,1));
+                      // Serial.print(BIT(data[4].status,0));
+                      // Serial.println("");
 
-    // Serial.print("gas_index: ");
-    // Serial.print(data[0].gas_index);
-    // Serial.print(", ");
-    // Serial.print(data[1].gas_index);
-    // Serial.print(", ");
-    // Serial.println(data[2].gas_index);    
+                      // Serial.print("gas_index: ");
+                      // Serial.print(data[0].gas_index);
+                      // Serial.print(", ");
+                      // Serial.print(data[1].gas_index);
+                      // Serial.print(", ");
+                      // Serial.println(data[2].gas_index);    
 
-    // Serial.print("meas_index: ");
-    // Serial.print(data[0].meas_index);
-    // Serial.print(", ");
-    // Serial.print(data[1].meas_index);
-    // Serial.print(", ");
-    // Serial.println(data[2].meas_index);  
+                      // Serial.print("meas_index: ");
+                      // Serial.print(data[0].meas_index);
+                      // Serial.print(", ");
+                      // Serial.print(data[1].meas_index);
+                      // Serial.print(", ");
+                      // Serial.println(data[2].meas_index);  
 
-    // Serial.print("n_fields: ");
-    // Serial.println(n_fields);  
+                      // Serial.print("n_fields: ");
+                      // Serial.println(n_fields);  
 
     
         /* Check if rslt == BME68X_OK, report or handle if otherwise */
@@ -570,34 +571,34 @@ bool Adafruit_BME688::endReading(void) {
     {
         if (true)//(data[i].status == BME68X_VALID_DATA)
         {
-#ifdef BME68X_USE_FPU
-            printf("%lu, %lu, %d, %d, %d, %.2f, %.2f, %.2f, %.2f, 0x%x, %d, %d\n",
-                    // sample_count,
-                    // (long unsigned int)time_ms,
-                    now_time,
-                    elapes_time,
-                    data[i].res_heat,
-                    data[i].idac,
-                    data[i].gas_wait,
-                    data[i].temperature,
-                    data[i].pressure,
-                    data[i].humidity,
-                    data[i].gas_resistance,
-                    data[i].status,
-                    data[i].gas_index,
-                    data[i].meas_index);
-#else
-            printf("%u, %lu, %d, %lu, %lu, %lu, 0x%x, %d, %d\n",
-                    // sample_count,
-                    // (long unsigned int)time_ms,
-                    (data[i].temperature / 100),
-                    (long unsigned int)data[i].pressure,
-                    (long unsigned int)(data[i].humidity / 1000),
-                    (long unsigned int)data[i].gas_resistance,
-                    data[i].status,
-                    data[i].gas_index,
-                    data[i].meas_index);
-#endif
+// #ifdef BME68X_USE_FPU
+//             printf("%lu, %lu, %d, %d, %d, %.2f, %.2f, %.2f, %.2f, 0x%x, %d, %d\n",
+//                     // sample_count,
+//                     // (long unsigned int)time_ms,
+//                     now_time,
+//                     elapes_time,
+//                     data[i].res_heat,
+//                     data[i].idac,
+//                     data[i].gas_wait,
+//                     data[i].temperature,
+//                     data[i].pressure,
+//                     data[i].humidity,
+//                     data[i].gas_resistance,
+//                     data[i].status,
+//                     data[i].gas_index,
+//                     data[i].meas_index);
+// #else
+            // printf("%u, %lu, %d, %lu, %lu, %lu, 0x%x, %d, %d\n",
+            //         // sample_count,
+            //         // (long unsigned int)time_ms,
+            //         (data[i].temperature / 100),
+            //         (long unsigned int)data[i].pressure,
+            //         (long unsigned int)(data[i].humidity / 1000),
+            //         (long unsigned int)data[i].gas_resistance,
+            //         data[i].status,
+            //         data[i].gas_index,
+            //         data[i].meas_index);
+// #endif
             // sample_count++;
         }
     }
@@ -612,7 +613,7 @@ bool Adafruit_BME688::endReading(void) {
   if (rslt != BME68X_OK)
     return false;
 
-  if (BME688_DEFAULT_OP_MODE==BME68X_FORCED_MODE){
+  if (meas_mode==BME68X_FORCED_MODE){
     if (n_fields) {
       temperature = data_single.temperature;
       humidity = data_single.humidity;
@@ -622,7 +623,7 @@ bool Adafruit_BME688::endReading(void) {
     Serial.print(F("data.status 0x"));
     Serial.println(data.status, HEX);
 #endif
-      if (data_single.status & (BME68X_HEAT_STAB_MSK | BME68X_GASM_VALID_MSK)) {
+      if (true){//(data_single.status & (BME68X_HEAT_STAB_MSK | BME68X_GASM_VALID_MSK)) {
         // Serial.print("Gas resistance: "); Serial.println(data.gas_resistance);
         gas_resistance = data_single.gas_resistance;
       } else {
@@ -633,8 +634,12 @@ bool Adafruit_BME688::endReading(void) {
   }
 
   else{
-
-
+    if (n_fields) {
+      gas_resistance = data[0].gas_resistance;
+      temperature = data[0].temperature;
+      humidity = data[0].humidity;
+      pressure = data[0].pressure;
+    }
   }
   return true;
 }
@@ -654,33 +659,6 @@ int Adafruit_BME688::remainingReadingMillis(void) {
   }
   return reading_not_started;
 }
-
-/*!
- *  @brief  Enable and configure gas reading + heater
- *  @param  heaterTemp
- *          Desired temperature in degrees Centigrade
- *  @param  heaterTime
- *          Time to keep heater on in milliseconds
- *  @return True on success, False on failure
- */
-// bool Adafruit_BME688::setMode(uint16_t heaterTemp, uint16_t heaterTime) {
-//   const uint8_t op_mode = BME68X_FORCED_MODE;
-//   if ((heaterTemp == 0) || (heaterTime == 0)) {
-//     gas_heatr_conf.enable = BME68X_DISABLE;
-//   } else {
-//     gas_heatr_conf.enable = BME68X_ENABLE;
-//     gas_heatr_conf.heatr_temp = heaterTemp;
-//     gas_heatr_conf.heatr_dur = heaterTime;
-//   }
-
-//   int8_t rslt =
-//       bme68x_set_heatr_conf(op_mode, &gas_heatr_conf, &gas_sensor);
-// #ifdef BME680_DEBUG
-//   Serial.print(F("SetHeaterConf Result: "));
-//   Serial.println(rslt);
-// #endif
-//   return rslt == 0;
-// }
 
 /*!
  *  @brief  Enable and configure gas reading + heater
@@ -741,22 +719,22 @@ bool Adafruit_BME688::setGasHeater(uint16_t heaterTemp, uint16_t heaterTime) {
  *  @return True on success, False on failure
  */
 bool Adafruit_BME688::setGasHeaterProfile(uint16_t temp_prof[5], uint16_t mul_prof[5]) {
-  const uint8_t op_mode = BME688_DEFAULT_OP_MODE;
-  if (op_mode==BME68X_PARALLEL_MODE || op_mode==BME68X_SEQUENTIAL_MODE){
+  // const uint8_t op_mode = meas_mode;
+  if (meas_mode==BME68X_PARALLEL_MODE || meas_mode==BME68X_SEQUENTIAL_MODE){
     gas_heatr_conf.enable = BME68X_ENABLE;
     // gas_heatr_conf.enable = BME68X_DISABLE;
     gas_heatr_conf.heatr_temp_prof = temp_prof;
     gas_heatr_conf.heatr_dur_prof = mul_prof;
 
       /* Shared heating duration in milliseconds */
-    gas_heatr_conf.shared_heatr_dur = 140 - (bme68x_get_meas_dur(op_mode, &gas_conf, &gas_sensor) / 1000);
+    gas_heatr_conf.shared_heatr_dur = 140 - (bme68x_get_meas_dur(meas_mode, &gas_conf, &gas_sensor) / 1000);
     // gas_heatr_conf.shared_heatr_dur = 0;
     Serial.print("Shared heater dur: ");
     Serial.println(gas_heatr_conf.shared_heatr_dur);
     gas_heatr_conf.profile_len = 5;     //TODO: would be nice if recognized automatically.
 
     int8_t rslt =
-        bme68x_set_heatr_conf(op_mode, &gas_heatr_conf, &gas_sensor);  
+        bme68x_set_heatr_conf(meas_mode, &gas_heatr_conf, &gas_sensor);  
   
   #ifdef BME680_DEBUG
     Serial.print(F("SetHeaterConf Result: "));
@@ -768,6 +746,21 @@ bool Adafruit_BME688::setGasHeaterProfile(uint16_t temp_prof[5], uint16_t mul_pr
     return false;
   }
 }
+
+/*!
+ *  @brief  Setter for Output Data Rate
+ *  @param  odr
+ *          Output data rate setting, can be BME68X_ODR_NONE,
+ * BME68X_ODR_0_59_MS, BME68X_ODR_10_MS, BME68X_ODR_20_MS, BME68X_ODR_62_5_MS,
+ * BME68X_ODR_125_MS, BME68X_ODR_250_MS, BME68X_ODR_500_MS, BME68X_ODR_1000_MS
+ *  @return True on success, False on failure
+ */
+
+bool Adafruit_BME688::setMode(uint8_t mode) {
+  meas_mode = mode;
+  return 0;
+}
+
 
 /*!
  *  @brief  Setter for Output Data Rate
