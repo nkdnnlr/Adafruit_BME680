@@ -520,11 +520,11 @@ uint32_t bme68x_get_meas_dur(const uint8_t op_mode, struct bme68x_conf *conf, st
             /* TPH measurement duration */
             meas_dur = meas_cycles * UINT32_C(1963);
             meas_dur += UINT32_C(477 * 4); /* TPH switching duration */
-            meas_dur += 0;//UINT32_C(477 * 5); /* Gas measurement duration */
+            meas_dur += UINT32_C(477 * 5); /* Gas measurement duration */
 
             if (op_mode != BME68X_PARALLEL_MODE)
             {
-                meas_dur += 0;//UINT32_C(1000); /* Wake up duration of 1ms */
+                meas_dur += UINT32_C(1000); /* Wake up duration of 1ms */
             }
         }
     }
@@ -1491,7 +1491,6 @@ static int8_t set_conf(const struct bme68x_heatr_conf *conf, uint8_t op_mode, ui
                 rslt = BME68X_E_NULL_PTR;
                 break;
             }
-
             for (i = 0; i < conf->profile_len; i++)
             {
                 rh_reg_addr[i] = BME68X_REG_RES_HEAT0 + i;
