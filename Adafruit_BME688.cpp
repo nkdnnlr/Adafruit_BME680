@@ -567,7 +567,7 @@ bool Adafruit_BME688::setGasHeaterProfile(uint16_t temp_prof[10], uint16_t mul_p
     // gas_heatr_conf.enable = BME68X_DISABLE;
     gas_heatr_conf.heatr_temp_prof = temp_prof;
     gas_heatr_conf.heatr_dur_prof = mul_prof;
-    gas_heatr_conf.profile_len = 5;     //TODO: would be nice if recognized automatically.
+    gas_heatr_conf.profile_len = 10;     //TODO: would be nice if recognized automatically. -> actually I think it doesn't matter...
 
       /* Shared heating duration in milliseconds */
     gas_heatr_conf.shared_heatr_dur = 140 - (bme68x_get_meas_dur(meas_mode, &gas_conf, &gas_sensor) / 1000);
@@ -590,7 +590,7 @@ bool Adafruit_BME688::setGasHeaterProfile(uint16_t temp_prof[10], uint16_t mul_p
     gas_heatr_conf.heatr_temp_prof = temp_prof;
     gas_heatr_conf.heatr_dur_prof = mul_prof;
     gas_heater_dur = gas_heatr_conf.heatr_dur_prof[0];
-    gas_heatr_conf.profile_len = 10;     //TODO: would be nice if recognized automatically.
+    gas_heatr_conf.profile_len = 5;     //TODO: would be nice if recognized automatically.
     // gas_heatr_conf.shared_heatr_dur = 140 - (bme68x_get_meas_dur(meas_mode, &gas_conf, &gas_sensor) / 1000);
 
       /* Shared heating duration in milliseconds */
